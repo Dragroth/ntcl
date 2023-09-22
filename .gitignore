@@ -22,6 +22,7 @@ crash.log
 crash.*.log
 
 # Packer stuff
+credentials.pkr.hcl
 **/*.auto.pkrvars.hcl
 packer-*.log
 packer_cache/
