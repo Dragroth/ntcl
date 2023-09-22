@@ -1,0 +1,28 @@
+;
+; BIND data file for local loopback interface
+;
+
+$TTL	2d
+$ORIGIN loc.ntcl.pl.
+
+@	IN	SOA	ns1.loc.ntcl.pl. root.ntcl.pl. (
+			20230803	; Serial
+			12h		; Refresh
+			15m		; Retry
+			3w		; Expire
+			2h )		; Negative Cache TTL
+
+; nameservers
+@				IN	NS	ns1.loc.ntcl.pl.
+
+; nameservers - A record
+ns1.loc.ntcl.pl.		IN	A	10.0.0.100
+
+; hardware
+rt01				IN	A	10.0.0.1
+hv01				IN	A	10.0.1.1
+hv02				IN	A	10.0.2.1
+
+; servers
+proxy-local			IN	A	10.0.0.120
+vw				IN	A	10.0.0.120
