@@ -1,6 +1,6 @@
-# Ubuntu Server jammy
+# Ubuntu Server
 # ---
-# Packer Template to create an Ubuntu Server (jammy) on Proxmox
+# Packer Template to create an Ubuntu Server on Proxmox
 
 packer {
   required_plugins {
@@ -12,6 +12,8 @@ packer {
 }
 
 # Variable Definitions
+
+# PVE connection
 variable "proxmox_api_url" {
     type = string
 }
@@ -25,22 +27,43 @@ variable "proxmox_api_token_secret" {
     sensitive = true
 }
 
+# VM variables
+variable "iso_file" {
+  type = string
+  default = "local:iso/ubuntu-22.04.3-live-server-amd64.iso"
+}
+
+variable "cloudinit_storage_pool" {
+  type    = string
+  default = "local-lvm"
+}
+
+variable "proxmox_node" {
+  type = string
+  default = "hv01"
+}
+
+variable "storage_pool" {
+  type = string
+  default = "local-lvm"
+}
+
 source "proxmox-iso" "ubuntu-server" {
 
     # Proxmox Connection Settings
-    proxmox_url = "${var.proxmox_api_url}"
-    username = "${var.proxmox_api_token_id}"
-    token = "${var.proxmox_api_token_secret}"
+    proxmox_url = var.proxmox_api_url
+    username = var.proxmox_api_token_id
+    token = var.proxmox_api_token_secret
     insecure_skip_tls_verify = false
 
     # VM General Settings
-    node = "hv01"
+    node = var.proxmox_node
     vm_id = "8000"
     vm_name = "ubuntu-server"
-    template_description = "Ubuntu Server clean installation"
+    template_description = "Built from ${basename(var.iso_file)} on ${formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())}"
 
     # Choose ISO file
-    iso_file = "local:iso/ubuntu-22.04.3-live-server-amd64.iso"
+    iso_file = var.iso_file
 
     iso_storage_pool = "local"
     unmount_iso = true
@@ -53,15 +76,15 @@ source "proxmox-iso" "ubuntu-server" {
 
     disks {
         disk_size = "10G"
-        storage_pool = "local-lvm"
+        storage_pool = var.storage_pool
         type = "virtio"
     }
 
     # VM CPU Settings
-    cores = "1"
+    cores = "2"
 
     # VM Memory Settings
-    memory = "1024"
+    memory = "2048"
 
     # VM Network Settings
     network_adapters {
@@ -72,7 +95,7 @@ source "proxmox-iso" "ubuntu-server" {
 
     # VM Cloud-Init Settings
     cloud_init = true
-    cloud_init_storage_pool = "local-lvm"
+    cloud_init_storage_pool = var.cloudinit_storage_pool
 
     # PACKER Boot Commands
     boot_command = [
@@ -93,7 +116,7 @@ source "proxmox-iso" "ubuntu-server" {
     # http_port_min = 8802
     # http_port_max = 8802
 
-    ssh_username = "admin"
+    ssh_username = "gkk"
 
     # (Option 1) Add your Password here
     # ssh_password = "your-password"

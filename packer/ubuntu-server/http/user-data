@@ -24,7 +24,7 @@ autoinstall:
     package_upgrade: true
     timezone: Europe/Warsaw
     users:
-      - name: admin
+      - name: gkk
         groups: [adm, sudo]
         lock-passwd: false
         sudo: ALL=(ALL) NOPASSWD:ALL
