@@ -126,8 +126,13 @@ build {
   sources = ["source.proxmox-iso.debian-12"]
 
   provisioner "file" {
+    destination = "/etc/cloud/cloud.cfg"
+    source      = "files/cloud.cfg"
+  }
+    
+  provisioner "file" {
     destination = "/etc/cloud/99-pve.cfg"
     source      = "files/99-pve.cfg"
   }
-    
+
 }
