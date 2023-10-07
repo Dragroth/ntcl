@@ -125,6 +125,19 @@ build {
   name    = "debian-12"
   sources = ["source.proxmox-iso.debian-12"]
 
+  provisioner "shell" {
+    inline = [
+      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
+      "sudo rm /etc/ssh/ssh_host_*",
+      "sudo truncate -s 0 /etc/machine-id",
+      "sudo apt -y autoremove --purge",
+      "sudo apt -y clean",
+      "sudo apt -y autoclean",
+      "sudo cloud-init clean",
+      "sudo sync"
+    ]
+  }
+
   provisioner "file" {
     destination = "/etc/cloud/cloud.cfg"
     source      = "files/cloud.cfg"

@@ -141,6 +141,12 @@ build {
       "sudo sync"
     ]
   }
+
+  provisioner "file" {
+    destination = "/etc/cloud/cloud.cfg"
+    source      = "files/cloud.cfg"
+  }
+
   provisioner "file" {
     source      = "files/99-pve.cfg"
     destination = "/tmp/99-pve.cfg"
