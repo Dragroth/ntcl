@@ -19,7 +19,7 @@ autoinstall:
     layout:
       name: lvm
     swap:
-      size: 0
+      size: 2G
   user-data:
     package_upgrade: true
     timezone: Europe/Warsaw

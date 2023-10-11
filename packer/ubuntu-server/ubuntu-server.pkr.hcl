@@ -58,6 +58,11 @@ variable "vm_id" {
   default = "8000"
 }
 
+variable "bridge_name" {
+  type    = string
+  default = "vmbr100"
+}
+
 source "proxmox-iso" "ubuntu-server" {
 
   # Proxmox Connection Settings
@@ -73,6 +78,7 @@ source "proxmox-iso" "ubuntu-server" {
   template_description  = "Built from ${basename(var.iso_file)} on ${formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())}"
   cores                 = "2"
   memory                = "2048"
+  cpu_type              = "host"
   qemu_agent            = true
 
   # ISO file
@@ -82,17 +88,17 @@ source "proxmox-iso" "ubuntu-server" {
   unmount_iso           = true
 
   # VM Hard Disk Settings
-  scsi_controller       = "virtio-scsi-pci"
+  scsi_controller       = "virtio-scsi-single"
   disks {
     disk_size     = "10G"
     storage_pool  = var.storage_pool
-    type          = "virtio"
+    type          = "scsi"
   }
 
   # VM Network Settings
   network_adapters {
     model     = "virtio"
-    bridge    = "vmbr100"
+    bridge    = var.bridge_name
     firewall  = "false"
   }
 
@@ -127,6 +133,7 @@ source "proxmox-iso" "ubuntu-server" {
 build {
   name    = "ubuntu-server"
   sources = ["source.proxmox-iso.ubuntu-server"]
+  
   provisioner "shell" {
     inline = [
       "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
@@ -143,8 +150,8 @@ build {
   }
 
   provisioner "file" {
-    destination = "/etc/cloud/cloud.cfg"
     source      = "files/cloud.cfg"
+    destination = "/tmp/cloud.cfg"
   }
 
   provisioner "file" {
@@ -152,6 +159,6 @@ build {
     destination = "/tmp/99-pve.cfg"
   }
   provisioner "shell" {
-    inline = [ "sudo cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg" ]
+    inline = [ "sudo cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg; sudo cp /tmp/cloud.cfg /etc/cloud/cloud.cfg" ]
   }
 }

@@ -30,7 +30,7 @@ variable "proxmox_api_token_secret" {
 # VM variables
 variable "iso_file" {
   type    = string
-  default = "local:iso/ubuntu-22.04.3-live-server-amd64.iso"
+  default = "local:iso/debian-12.1.0-amd64-netinst.iso"
 }
 
 variable "cloudinit_storage_pool" {
@@ -58,6 +58,10 @@ variable "vm_id" {
   default = "8010"
 }
 
+variable "bridge_name" {
+  type    = string
+  default = "vmbr100"
+}
 
 source "proxmox-iso" "debian-12" {
 
@@ -74,6 +78,7 @@ source "proxmox-iso" "debian-12" {
   template_description  = "Built from ${basename(var.iso_file)} on ${formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())}"
   cores                 = "2"
   memory                = "2048"
+  cpu_type              = "host"
   qemu_agent            = true
 
   # ISO file
@@ -83,23 +88,24 @@ source "proxmox-iso" "debian-12" {
   unmount_iso           = true
 
   # VM Hard Disk Settings
-  scsi_controller       = "virtio-scsi-pci"
+  scsi_controller       = "virtio-scsi-single"
   disks {
     disk_size     = "10G"
     storage_pool  = var.storage_pool
-    type          = "virtio"
+    type          = "scsi"
   }
 
   # VM Network Settings
   network_adapters {
     model     = "virtio"
-    bridge    = "vmbr100"
+    bridge    = var.bridge_name
     firewall  = "false"
   }
   
   # VM Cloud-Init Settings
   cloud_init              = true
   cloud_init_storage_pool = var.cloudinit_storage_pool
+
   # PACKER Boot Commands
   boot_command    = [
     "<down><down><down><down>",
@@ -127,9 +133,10 @@ build {
 
   provisioner "shell" {
     inline = [
-      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo rm /etc/ssh/ssh_host_*",
-      "sudo truncate -s 0 /etc/machine-id",
+      "sudo rm -f /etc/machine-id /var/lib/dbus/machine-id",
+      "sudo dbus-uuidgen --ensure=/etc/machine-id",
+      "sudo dbus-uuidgen --ensure",
       "sudo apt -y autoremove --purge",
       "sudo apt -y clean",
       "sudo apt -y autoclean",
@@ -147,5 +154,4 @@ build {
     destination = "/etc/cloud/99-pve.cfg"
     source      = "files/99-pve.cfg"
   }
-
 }
