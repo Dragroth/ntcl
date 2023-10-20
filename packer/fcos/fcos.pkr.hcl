@@ -7,13 +7,38 @@ packer {
   }
 }
 
-source "proxmox" "coreos" {
+# Variable Definitions
+
+# PVE connection
+variable "proxmox_api_url" {
+  type = string
+}
+
+variable "proxmox_api_token_id" {
+  type = string
+}
+
+variable "proxmox_api_token_secret" {
+  type      = string
+  sensitive = true
+}
+
+source "proxmox-iso" "coreos" {
 
   # Proxmox Connection Settings
   proxmox_url               = var.proxmox_api_url
   username                  = var.proxmox_api_token_id
   token                     = var.proxmox_api_token_secret
   insecure_skip_tls_verify  = false
+
+  # VM General Settings
+  node                  = "hv01"
+  vm_id                 = 8020
+  vm_name               = "fcos"
+  cores                 = "2"
+  memory                = "2048"
+  cpu_type              = "host"
+  qemu_agent            = true
 
   # Commands packer enters to boot and start the auto install
   boot_wait = "2s"
@@ -37,14 +62,9 @@ source "proxmox" "coreos" {
 
   # CoreOS does not support CloudInit
   cloud_init = false
-  qemu_agent = true
 
   scsi_controller = "virtio-scsi-pci"
 
-  cpu_type = "host"
-  cores = "2"
-  memory = "2048"
-  os = "l26"
 
   vga {
     type = "qxl"
@@ -53,20 +73,17 @@ source "proxmox" "coreos" {
 
   network_adapters {
     model = "virtio"
-    bridge = "vmbr0"
+    bridge = "vmbr100"
   }
 
   disks {
     disk_size = "45G"
     storage_pool = "local-lvm"
-    storage_pool_type = "lvm"
     type = "virtio"
   }
 
   iso_file = "local:iso/fedora-coreos-38.20230819.3.0-live.x86_64.iso"
   unmount_iso = true
-  template_name = "coreos-38.20230819.3.0"
-  template_description = "Fedora CoreOS"
 
   ssh_username = "core"
   ssh_private_key_file = "~/.ssh/id_ed25519"
@@ -74,7 +91,7 @@ source "proxmox" "coreos" {
 }
 
 build {
-  sources = ["source.proxmox.coreos"]
+  sources = ["source.proxmox-iso.coreos"]
 
   provisioner "shell" {
     inline = [
