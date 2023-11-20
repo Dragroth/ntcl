@@ -6,7 +6,7 @@ $TTL	2d
 $ORIGIN loc.ntcl.pl.
 
 @	IN	SOA	ns1.loc.ntcl.pl. root.ntcl.pl. (
-			20230803	; Serial
+			20231120; Serial
 			12h		; Refresh
 			15m		; Retry
 			3w		; Expire
@@ -24,5 +24,4 @@ hv01				IN	A	10.0.1.1
 hv02				IN	A	10.0.2.1
 
 ; servers
-proxy-local			IN	A	10.0.0.120
-vw				IN	A	10.0.0.120
+docker0			IN	A	10.0.0.120
