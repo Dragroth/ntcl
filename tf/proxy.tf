@@ -1,7 +1,7 @@
-resource "proxmox_virtual_environment_vm" "docker" {
-	name = "docker0"
-	description = "Docker host 0"
-	tags = ["terraform", "debian", "docker"]
+resource "proxmox_virtual_environment_vm" "proxy" {
+	name = "proxy"
+	description = "Local nginx proxy manager"
+	tags = ["terraform", "debian", "docker", "loc"]
     vm_id = 120
 
 	node_name = "hv01"
